@@ -10,27 +10,61 @@ import { useDispatch } from "react-redux";
 
 import { Dispatch } from "@reduxjs/toolkit";
 import { storageActions } from "../../features/storage/storageSlice"
+import {useParams} from "react-router-dom";
+import {getChildren} from "../../utils/getChildren";
 
-const Form: React.FC = () => {
+type Folder = {
+    path: string
+    name: string,
+    type: 'folder',
+    children: Array<Folder | File>
+}
+
+type File = {
+    name: string,
+    type: 'file',
+    text: string,
+}
+const Form:React.FC<{content: Array<Folder | File>}> = (props) => {
     const [name, setName] = useState('');
     const [showToast, setShowToast] = useState(false);
     const dispatch = useDispatch<Dispatch<any>>();
-
-    const validate = (name: string) => {
+    let { path } = useParams();
+    console.log(name);
+    const validate = (name: string, type: 'file' | 'folder') => {
         if (name === '') {
             setShowToast(true);
             toast.error("Name should not be empty!");
+            return false
         }
+
+        let children = path ? getChildren(path, props.content): props.content;
+        if (children.find((el: { name: string; type: string; }) => el.name === name && el.type === type )) {
+            setShowToast(true);
+            toast.error("Name should not be duplicated");
+            return false
+        }
+        return true
     }
 
     const addNewFolder = () => {
-        validate(name);
-        dispatch(storageActions.addFolder(name))
+        if (validate(name, 'folder')){
+            dispatch(storageActions.addFolder({
+                name,
+                path
+            }));
+            setName('');
+        }
     }
 
     const addNewFile = () => {
-        validate(name);
-        dispatch(storageActions.addFile(name))
+        if (validate(name, 'file')){
+            dispatch(storageActions.addFile({
+                name,
+                path
+            }));
+            setName('');
+        }
     }
 
     return (
@@ -52,6 +86,7 @@ const Form: React.FC = () => {
                     label="Name"
                     variant="standard"
                     onChange={(e) => setName(e.target.value)}
+                    value={name}
                 />
                 <ButtonGroup variant="outlined" aria-label="outlined button group" sx={{ margin: '10px'}}>
                     <Button color='primary' onClick={addNewFolder}>Add new folder</Button>

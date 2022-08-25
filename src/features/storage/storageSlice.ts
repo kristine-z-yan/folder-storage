@@ -1,13 +1,16 @@
 import { createSlice } from "@reduxjs/toolkit";
+import {getChildren} from "../../utils/getChildren";
 
 type Folder = {
+    path: string,
     name: string,
     type: 'folder',
-    children: Array<Folder | File>
+    children: Array<Folder | File> | []
 }
 
 type File = {
     name: string,
+    path: string,
     type: 'file',
     text: string,
 }
@@ -20,31 +23,44 @@ interface StorageSlice {
 const initialState: StorageSlice = {
     storage: [
         {
-            name: 'Folder 1',
+            path: 'Folder1',
+            name: 'Folder1',
             type: 'folder',
             children: [],
         },
         {
-            name: 'file 1',
+            name: 'file1',
+            path: 'file1',
             type: 'file',
             text: '',
         },
         {
-            name: 'file 2',
+            name: 'file2',
+            path: 'file2',
             type: 'file',
             text: '',
         },
         {
-            name: 'Folder 2',
+            path: 'Folder2',
+            name: 'Folder2',
             type: 'folder',
             children: [
                 {
-                    name: 'Folder 2.1',
+                    path: 'Folder2-Folder2.1',
+                    name: 'Folder2.1',
                     type: 'folder',
-                    children: [],
+                    children: [
+                        {
+                            path: 'Folder2-Folder2.1-Folder2.1.1',
+                            name: 'Folder2.1.1',
+                            type: 'folder',
+                            children: [],
+                        },
+                    ],
                 },
                 {
-                    name: 'file 2.1',
+                    name: 'file2.1',
+                    path: 'Folder2-file2.1',
                     type: 'file',
                     text: '',
                 },
@@ -59,26 +75,47 @@ const storageSlice = createSlice({
     initialState: initialState,
     reducers: {
         addFolder(state, { payload }) {
-            state.storage = [
-                ...state.storage,
-                {
-                    name: payload,
+            if (payload.path) {
+                const content = getChildren(payload.path, state.storage);
+                content.push({
+                    name: payload.name,
                     type: 'folder',
                     children: [],
-                }
-
-            ]
+                    path: payload.path + '-' + payload.name
+                })
+            } else {
+                state.storage = [
+                    ...state.storage,
+                    {
+                        name: payload.name,
+                        type: 'folder',
+                        children: [],
+                        path: payload.name
+                    }
+                ]
+            }
         },
         addFile(state, { payload }) {
-            state.storage = [
-                ...state.storage,
-                {
-                    name: payload,
+            if (payload.path) {
+                const content = getChildren(payload.path, state.storage);
+                content.push({
+                    name: payload.name,
                     type: 'file',
-                    text: ''
-                }
+                    text: '',
+                    path: payload.path + '-' + payload.name
+                })
+            } else {
+                state.storage = [
+                    ...state.storage,
+                    {
+                        name: payload.name,
+                        path: payload.name,
+                        type: 'file',
+                        text: ''
+                    }
 
-            ]
+                ]
+            }
         },
         saveFile(state, action) {},
     }

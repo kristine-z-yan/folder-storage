@@ -1,10 +1,8 @@
 import * as React from "react";
-import { useSelector } from "react-redux";
 import {
-    BrowserRouter as Router, Link,
+    Link,
 } from "react-router-dom";
 
-import { RootState } from '../../app/store'
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
@@ -15,17 +13,29 @@ import ArticleIcon from '@mui/icons-material/Article';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { IconButton } from "@mui/material";
 
-const Storage: React.FC = () => {
-    const storage = useSelector((state:RootState) => state.state.storage);
+type Folder = {
+    path: string
+    name: string,
+    type: 'folder',
+    children: Array<Folder | File>
+}
 
+type File = {
+    name: string,
+    type: 'file',
+    text: string,
+}
+
+const Storage: React.FC<{content: Array<Folder | File>}> = (props) => {
     let folders: JSX.Element[] = [];
     let files: JSX.Element[] = [];
+    let emptyText = '';
 
-    if (storage.length > 0 ) {
-        for (const e of storage) {
+    if (props.content.length > 0 ) {
+        for (const e of props.content) {
             if (e.type === 'folder') {
                 folders.push(
-                <ListItem disablePadding key={`folder-${e.name}`} component={Link} to="/folder">
+                <ListItem disablePadding key={`folder-${e.name}`} component={Link} to={`/folders/${e.path}`}>
                     <ListItemButton>
                         <ListItemIcon>
                             <FolderIcon color='primary'/>
@@ -54,13 +64,14 @@ const Storage: React.FC = () => {
         }
     }
 
+    if(folders.length === 0 && files.length === 0) emptyText = 'This folder is empty.'
+
     return (
-        <Router>
-            <List>
-                {folders}
-                {files}
-            </List>
-        </Router>
+        <List>
+            {emptyText}
+            {folders}
+            {files}
+        </List>
     )
 }
 
