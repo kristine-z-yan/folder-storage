@@ -6,6 +6,7 @@ import {
 import {Container} from "@mui/material";
 import Folder from "./features/folder/Folder";
 import Main from "./pages/Main";
+import File from "./pages/File";
 
 function App() {
     return (
@@ -14,6 +15,7 @@ function App() {
               <Routes>
                   <Route path="/" element={<Main />}/>
                   <Route path="/folders/:path" element={<Folder />}/>
+                  <Route path="/files/:path" element={<File />}/>
               </Routes>
           </Router>
       </Container>

@@ -21,16 +21,17 @@ type Folder = {
 }
 
 type File = {
+    path: string,
     name: string,
     type: 'file',
-    text: string,
+    data: string,
 }
 const Form:React.FC<{content: Array<Folder | File>}> = (props) => {
     const [name, setName] = useState('');
     const [showToast, setShowToast] = useState(false);
     const dispatch = useDispatch<Dispatch<any>>();
-    let { path } = useParams();
-    console.log(name);
+    const { path } = useParams();
+
     const validate = (name: string, type: 'file' | 'folder') => {
         if (name === '') {
             setShowToast(true);

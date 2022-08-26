@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import {getChildren} from "../../utils/getChildren";
+import {getFile} from "../../utils/getFile";
 
 type Folder = {
     path: string,
@@ -12,12 +13,12 @@ type File = {
     name: string,
     path: string,
     type: 'file',
-    text: string,
+    data: string,
 }
 
 interface StorageSlice {
     storage: Array<Folder | File>,
-    trash: []
+    trash: Array<Folder | File>,
 }
 
 const initialState: StorageSlice = {
@@ -32,13 +33,13 @@ const initialState: StorageSlice = {
             name: 'file1',
             path: 'file1',
             type: 'file',
-            text: '',
+            data: '',
         },
         {
             name: 'file2',
             path: 'file2',
             type: 'file',
-            text: '',
+            data: '',
         },
         {
             path: 'Folder2',
@@ -62,7 +63,7 @@ const initialState: StorageSlice = {
                     name: 'file2.1',
                     path: 'Folder2-file2.1',
                     type: 'file',
-                    text: '',
+                    data: '',
                 },
             ],
         },
@@ -101,7 +102,7 @@ const storageSlice = createSlice({
                 content.push({
                     name: payload.name,
                     type: 'file',
-                    text: '',
+                    data: '',
                     path: payload.path + '-' + payload.name
                 })
             } else {
@@ -111,13 +112,36 @@ const storageSlice = createSlice({
                         name: payload.name,
                         path: payload.name,
                         type: 'file',
-                        text: ''
+                        data: ''
                     }
 
                 ]
             }
         },
-        saveFile(state, action) {},
+        saveFile(state, { payload }) {
+            const file = getFile(payload.path, state.storage);
+            file.data = payload.data;
+        },
+        moveToTrash(state, { payload }) {
+            let route = payload.path.split('-');
+            let content = state.storage;
+            let itemName = route.pop();
+            if (route.length > 0) {
+                route.map((name: string) => {
+                    let item = content.find((el:any) => el.name === name);
+                    if (item?.type === "folder") {
+                        content = item.children;
+                    }
+                    return content
+                })
+            }
+            const fileIndex = content.findIndex((item: { name: string; type: string; }) => item.name === itemName && item.type === payload.type);
+            const file = content.splice(fileIndex,1);
+            state.trash = [
+                ...state.trash,
+                file[0]
+            ]
+        }
     }
 })
 

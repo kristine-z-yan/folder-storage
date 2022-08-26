@@ -7,23 +7,15 @@ import {Box} from "@mui/material";
 import {Link, useParams} from "react-router-dom";
 import {useSelector} from "react-redux";
 import {RootState} from "../../app/store";
+import {getChildren} from "../../utils/getChildren";
 
 const Folder:React.FC = () => {
-    let { path } = useParams();
+    const { path } = useParams();
     const storage = useSelector((state:RootState) => state.state.storage);
-    let content = storage;
-    let folders = path?.split('-');
     const prevFolder = path?.substr(0, path?.lastIndexOf('-'));
     const backButton = prevFolder ? '/folders/'+ prevFolder : '/';
-    if (folders?.length) {
-        folders.map(name => {
-            let item = content.find(el => el.name === name);
-            if (item?.type === "folder") {
-                content = item.children;
-            }
-            return content;
-        })
-    }
+
+    let content = path ? getChildren(path, storage): storage;
 
     return (
         <Grid container spacing={2} >

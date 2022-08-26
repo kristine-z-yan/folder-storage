@@ -12,6 +12,10 @@ import FolderIcon from '@mui/icons-material/Folder';
 import ArticleIcon from '@mui/icons-material/Article';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { IconButton } from "@mui/material";
+import {useDispatch, useSelector} from "react-redux";
+import {Dispatch} from "@reduxjs/toolkit";
+import {storageActions} from "./storageSlice";
+import {RootState} from "../../app/store";
 
 type Folder = {
     path: string
@@ -21,27 +25,38 @@ type Folder = {
 }
 
 type File = {
+    path: string
     name: string,
     type: 'file',
-    text: string,
+    data: string,
 }
 
 const Storage: React.FC<{content: Array<Folder | File>}> = (props) => {
+    const dispatch = useDispatch<Dispatch<any>>();
+
     let folders: JSX.Element[] = [];
     let files: JSX.Element[] = [];
     let emptyText = '';
+    const storage = useSelector((state:RootState) => state.state.storage);
+
+    const moveToTrash = (path: string, type: 'folder' | 'file') => {
+        dispatch(storageActions.moveToTrash({path, type}));
+        // console.log(file, storage);
+    }
 
     if (props.content.length > 0 ) {
         for (const e of props.content) {
             if (e.type === 'folder') {
                 folders.push(
-                <ListItem disablePadding key={`folder-${e.name}`} component={Link} to={`/folders/${e.path}`}>
+                <ListItem disablePadding key={`folder-${e.name}`}>
                     <ListItemButton>
                         <ListItemIcon>
                             <FolderIcon color='primary'/>
                         </ListItemIcon>
-                        <ListItemText primary={e.name} sx={{ display: 'inline-block' }}/>
-                        <IconButton>
+                        <Link to={`/folders/${e.path}`} style={{'width': '100%'}}>
+                            <ListItemText primary={e.name} sx={{ display: 'inline-block' }}/>
+                        </Link>
+                        <IconButton onClick={() => moveToTrash(e.path, 'folder')}>
                             <DeleteIcon color='error'/>
                         </IconButton>
                     </ListItemButton>
@@ -53,8 +68,10 @@ const Storage: React.FC<{content: Array<Folder | File>}> = (props) => {
                             <ListItemIcon>
                                 <ArticleIcon color='success'/>
                             </ListItemIcon>
-                            <ListItemText primary={e.name} />
-                            <IconButton>
+                            <Link to={`/files/${e.path}`} style={{'width': '100%'}}>
+                                <ListItemText primary={e.name} sx={{ display: 'inline-block' }}/>
+                            </Link>
+                            <IconButton onClick={() => moveToTrash(e.path, 'file')}>
                                 <DeleteIcon color='error'/>
                             </IconButton>
                         </ListItemButton>
