@@ -26,7 +26,9 @@ const Folder:React.FC = () => {
                 <Form content={content}/>
             </Grid>
             <Grid item xs={4}>
-                <DeleteOutlineOutlinedIcon fontSize='large' sx={{ marginTop: '10px'}}/>
+                <Link to='/trash'>
+                    <DeleteOutlineOutlinedIcon fontSize='large' sx={{ marginTop: '10px'}}/>
+                </Link>
             </Grid>
             <Box sx={{
                 width: 400,

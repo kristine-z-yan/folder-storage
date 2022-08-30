@@ -7,6 +7,7 @@ import {Container} from "@mui/material";
 import Folder from "./features/folder/Folder";
 import Main from "./pages/Main";
 import File from "./pages/File";
+import Trash from "./pages/Trash";
 
 function App() {
     return (
@@ -16,6 +17,7 @@ function App() {
                   <Route path="/" element={<Main />}/>
                   <Route path="/folders/:path" element={<Folder />}/>
                   <Route path="/files/:path" element={<File />}/>
+                  <Route path="/trash" element={<Trash />}/>
               </Routes>
           </Router>
       </Container>

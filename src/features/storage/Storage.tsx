@@ -37,11 +37,9 @@ const Storage: React.FC<{content: Array<Folder | File>}> = (props) => {
     let folders: JSX.Element[] = [];
     let files: JSX.Element[] = [];
     let emptyText = '';
-    const storage = useSelector((state:RootState) => state.state.storage);
 
     const moveToTrash = (path: string, type: 'folder' | 'file') => {
         dispatch(storageActions.moveToTrash({path, type}));
-        // console.log(file, storage);
     }
 
     if (props.content.length > 0 ) {

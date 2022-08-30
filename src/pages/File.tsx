@@ -1,20 +1,13 @@
-import React, {useRef} from "react";
-import {Box, Button, Card, CardActions, CardContent, createTheme, ThemeProvider} from "@mui/material";
-import {Link, useParams} from "react-router-dom";
+import React, { useRef } from "react";
+import { Box, Button, Card, CardActions, CardContent, createTheme, ThemeProvider} from "@mui/material";
+import { Link, useParams } from "react-router-dom";
 import Grid from "@mui/material/Grid";
-import {useDispatch, useSelector} from "react-redux";
-import {Dispatch} from "@reduxjs/toolkit";
-import {RootState} from "../app/store";
-import {getFile} from "../utils/getFile";
-import MUIRichTextEditor, {TMUIRichTextEditorRef} from "mui-rte";
+import { useDispatch, useSelector } from "react-redux";
+import { Dispatch } from "@reduxjs/toolkit";
+import { RootState } from "../app/store";
+import { getFile } from "../utils/getFile";
+import MUIRichTextEditor, { TMUIRichTextEditorRef } from "mui-rte";
 import { storageActions } from "../features/storage/storageSlice";
-
-type File = {
-    path: string,
-    name: string,
-    type: 'file',
-    data: string,
-}
 
 const File:React.FC = () => {
     const { path } = useParams();

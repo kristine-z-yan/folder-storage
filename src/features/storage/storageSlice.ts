@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
-import {getChildren} from "../../utils/getChildren";
-import {getFile} from "../../utils/getFile";
+import { getChildren } from "../../utils/getChildren";
+import { getFile } from "../../utils/getFile";
 
 type Folder = {
     path: string,
@@ -19,6 +19,8 @@ type File = {
 interface StorageSlice {
     storage: Array<Folder | File>,
     trash: Array<Folder | File>,
+    errorMessage: string,
+    successMessage: string,
 }
 
 const initialState: StorageSlice = {
@@ -68,7 +70,9 @@ const initialState: StorageSlice = {
             ],
         },
     ],
-    trash: []
+    trash: [],
+    errorMessage: '',
+    successMessage: '',
 };
 
 const storageSlice = createSlice({
@@ -124,23 +128,39 @@ const storageSlice = createSlice({
         },
         moveToTrash(state, { payload }) {
             let route = payload.path.split('-');
-            let content = state.storage;
             let itemName = route.pop();
-            if (route.length > 0) {
-                route.map((name: string) => {
-                    let item = content.find((el:any) => el.name === name);
-                    if (item?.type === "folder") {
-                        content = item.children;
-                    }
-                    return content
-                })
-            }
+            let content = getChildren(payload.path, state.storage);
             const fileIndex = content.findIndex((item: { name: string; type: string; }) => item.name === itemName && item.type === payload.type);
             const file = content.splice(fileIndex,1);
             state.trash = [
                 ...state.trash,
                 file[0]
             ]
+        },
+        deleteItem(state, { payload }) {
+            state.trash.splice(payload.index, 1);
+        },
+        recoverItem(state, { payload }) {
+            let route = payload.path.split('-');
+            let itemName = route.splice(route.length, 1);
+            const fileIndex = state.trash.findIndex((item: { name: string; type: string; }) => item.name === itemName && item.type === payload.type);
+            const file = state.trash.splice(fileIndex, 1)[0];
+            let content = getChildren(payload.path, state.storage);
+            const index = content.findIndex((item: { path: string; type: string; }) => item.path === file.path && item.type === file.type);
+            if (index !== -1) {
+                state.trash = [
+                    ...state.trash,
+                    file
+                ]
+                state.errorMessage = 'There is an item with such name'
+            } else {
+                content.push(file)
+                state.successMessage = 'Item recovered successfully'
+            }
+        },
+        clearMessages(state) {
+            state.errorMessage = '';
+            state.successMessage = '';
         }
     }
 })
