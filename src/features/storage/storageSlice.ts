@@ -2,19 +2,8 @@ import { createSlice } from "@reduxjs/toolkit";
 import { getChildren } from "../../utils/getChildren";
 import { getFile } from "../../utils/getFile";
 
-type Folder = {
-    path: string,
-    name: string,
-    type: 'folder',
-    children: Array<Folder | File> | []
-}
-
-type File = {
-    name: string,
-    path: string,
-    type: 'file',
-    data: string,
-}
+import { Folder } from "../../modules/Folder";
+import { File } from "../../modules/File";
 
 interface StorageSlice {
     storage: Array<Folder | File>,
@@ -24,52 +13,7 @@ interface StorageSlice {
 }
 
 const initialState: StorageSlice = {
-    storage: [
-        {
-            path: 'Folder1',
-            name: 'Folder1',
-            type: 'folder',
-            children: [],
-        },
-        {
-            name: 'file1',
-            path: 'file1',
-            type: 'file',
-            data: '',
-        },
-        {
-            name: 'file2',
-            path: 'file2',
-            type: 'file',
-            data: '',
-        },
-        {
-            path: 'Folder2',
-            name: 'Folder2',
-            type: 'folder',
-            children: [
-                {
-                    path: 'Folder2-Folder2.1',
-                    name: 'Folder2.1',
-                    type: 'folder',
-                    children: [
-                        {
-                            path: 'Folder2-Folder2.1-Folder2.1.1',
-                            name: 'Folder2.1.1',
-                            type: 'folder',
-                            children: [],
-                        },
-                    ],
-                },
-                {
-                    name: 'file2.1',
-                    path: 'Folder2-file2.1',
-                    type: 'file',
-                    data: '',
-                },
-            ],
-        },
-    ],
+    storage: [],
     trash: [],
     errorMessage: '',
     successMessage: '',
@@ -81,12 +25,13 @@ const storageSlice = createSlice({
     reducers: {
         addFolder(state, { payload }) {
             if (payload.path) {
-                const content = getChildren(payload.path, state.storage);
+                let route = payload.path.split('-');
+                const content = getChildren(state.storage, route);
                 content.push({
                     name: payload.name,
                     type: 'folder',
                     children: [],
-                    path: payload.path + '-' + payload.name
+                    path: payload.path + '-' + payload.name,
                 })
             } else {
                 state.storage = [
@@ -95,19 +40,20 @@ const storageSlice = createSlice({
                         name: payload.name,
                         type: 'folder',
                         children: [],
-                        path: payload.name
+                        path: payload.name,
                     }
                 ]
             }
         },
         addFile(state, { payload }) {
             if (payload.path) {
-                const content = getChildren(payload.path, state.storage);
+                let route = payload.path.split('-');
+                const content = getChildren(state.storage, route);
                 content.push({
                     name: payload.name,
                     type: 'file',
                     data: '',
-                    path: payload.path + '-' + payload.name
+                    path: payload.path + '-' + payload.name,
                 })
             } else {
                 state.storage = [
@@ -116,7 +62,7 @@ const storageSlice = createSlice({
                         name: payload.name,
                         path: payload.name,
                         type: 'file',
-                        data: ''
+                        data: '',
                     }
 
                 ]
@@ -125,37 +71,42 @@ const storageSlice = createSlice({
         saveFile(state, { payload }) {
             const file = getFile(payload.path, state.storage);
             file.data = payload.data;
+            state.successMessage = 'File saved successfully';
         },
         moveToTrash(state, { payload }) {
             let route = payload.path.split('-');
             let itemName = route.pop();
-            let content = getChildren(payload.path, state.storage);
+            let content = route.length > 0 ? getChildren(state.storage, route): state.storage;
             const fileIndex = content.findIndex((item: { name: string; type: string; }) => item.name === itemName && item.type === payload.type);
-            const file = content.splice(fileIndex,1);
+            const file = content.splice(fileIndex, 1)[0];
             state.trash = [
                 ...state.trash,
-                file[0]
+                file
             ]
         },
         deleteItem(state, { payload }) {
             state.trash.splice(payload.index, 1);
         },
         recoverItem(state, { payload }) {
+            // Find item in trash
             let route = payload.path.split('-');
-            let itemName = route.splice(route.length, 1);
-            const fileIndex = state.trash.findIndex((item: { name: string; type: string; }) => item.name === itemName && item.type === payload.type);
-            const file = state.trash.splice(fileIndex, 1)[0];
-            let content = getChildren(payload.path, state.storage);
-            const index = content.findIndex((item: { path: string; type: string; }) => item.path === file.path && item.type === file.type);
-            if (index !== -1) {
-                state.trash = [
-                    ...state.trash,
-                    file
-                ]
-                state.errorMessage = 'There is an item with such name'
+            let itemName = route.pop();
+            const itemIndex = state.trash.findIndex((trashItem: { name: string; type: string; }) => trashItem.name === itemName && trashItem.type === payload.type);
+            const item = state.trash[itemIndex];
+
+            // Find item's parents in storage
+            let content = route.length > 0 ? getChildren(state.storage, route): state.storage;
+            if (!content) {
+                state.errorMessage = 'This item can not be recovered'
             } else {
-                content.push(file)
-                state.successMessage = 'Item recovered successfully'
+                const index = content.findIndex((el: { path: string; type: string; }) => el.path === item.path && el.type === item.type);
+
+                if (index !== -1) {
+                    state.errorMessage = 'There is an item with such name'
+                } else {
+                    content.push(state.trash.splice(itemIndex, 1)[0])
+                    state.successMessage = 'Item recovered successfully'
+                }
             }
         },
         clearMessages(state) {

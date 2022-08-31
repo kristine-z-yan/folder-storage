@@ -12,24 +12,12 @@ import FolderIcon from '@mui/icons-material/Folder';
 import ArticleIcon from '@mui/icons-material/Article';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { IconButton } from "@mui/material";
-import {useDispatch, useSelector} from "react-redux";
-import {Dispatch} from "@reduxjs/toolkit";
-import {storageActions} from "./storageSlice";
-import {RootState} from "../../app/store";
+import { useDispatch } from "react-redux";
+import { Dispatch } from "@reduxjs/toolkit";
+import { storageActions } from "./storageSlice";
 
-type Folder = {
-    path: string
-    name: string,
-    type: 'folder',
-    children: Array<Folder | File>
-}
-
-type File = {
-    path: string
-    name: string,
-    type: 'file',
-    data: string,
-}
+import { Folder } from "../../modules/Folder";
+import { File } from "../../modules/File";
 
 const Storage: React.FC<{content: Array<Folder | File>}> = (props) => {
     const dispatch = useDispatch<Dispatch<any>>();

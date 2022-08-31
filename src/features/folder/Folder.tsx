@@ -3,19 +3,20 @@ import Grid from "@mui/material/Grid";
 import Form from "../../components/Form/Form";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import Storage from "../storage/Storage";
-import {Box} from "@mui/material";
-import {Link, useParams} from "react-router-dom";
-import {useSelector} from "react-redux";
-import {RootState} from "../../app/store";
-import {getChildren} from "../../utils/getChildren";
+import { Box } from "@mui/material";
+import { Link, useParams } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { RootState } from "../../app/store";
+import { getChildren } from "../../utils/getChildren";
 
 const Folder:React.FC = () => {
     const { path } = useParams();
     const storage = useSelector((state:RootState) => state.state.storage);
     const prevFolder = path?.substr(0, path?.lastIndexOf('-'));
     const backButton = prevFolder ? '/folders/'+ prevFolder : '/';
+    const route = path ? path.split('-'): [];
 
-    let content = path ? getChildren(path, storage): storage;
+    let content = path ? getChildren(storage, route): storage;
 
     return (
         <Grid container spacing={2} >

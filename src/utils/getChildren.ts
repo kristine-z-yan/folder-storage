@@ -1,10 +1,11 @@
-export const getChildren = (path: string, storage: any) => {
-    let parents = path.split('-');
+export const getChildren = (storage: any, route: string[]) => {
     let content = storage;
-    parents.map((name: string) => {
+    route.map((name: string) => {
         let item = content.find((el:any) => el.name === name);
-        if (item?.type === "folder") {
+        if (item && item.type === "folder") {
             content = item.children;
+        } else if(!item) {
+            return false;
         }
         return content;
     })

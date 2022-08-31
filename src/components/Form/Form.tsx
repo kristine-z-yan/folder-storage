@@ -10,22 +10,12 @@ import { useDispatch } from "react-redux";
 
 import { Dispatch } from "@reduxjs/toolkit";
 import { storageActions } from "../../features/storage/storageSlice"
-import {useParams} from "react-router-dom";
-import {getChildren} from "../../utils/getChildren";
+import { useParams } from "react-router-dom";
+import { getChildren } from "../../utils/getChildren";
 
-type Folder = {
-    path: string
-    name: string,
-    type: 'folder',
-    children: Array<Folder | File>
-}
+import { Folder } from "../../modules/Folder";
+import { File } from "../../modules/File";
 
-type File = {
-    path: string,
-    name: string,
-    type: 'file',
-    data: string,
-}
 const Form:React.FC<{content: Array<Folder | File>}> = (props) => {
     const [name, setName] = useState('');
     const [showToast, setShowToast] = useState(false);
@@ -38,8 +28,9 @@ const Form:React.FC<{content: Array<Folder | File>}> = (props) => {
             toast.error("Name should not be empty!");
             return false
         }
+        let route = path ? path.split('-'): [];
 
-        let children = path ? getChildren(path, props.content): props.content;
+        let children = path && route.length > 0 ? getChildren(props.content, route): props.content;
         if (children.find((el: { name: string; type: string; }) => el.name === name && el.type === type )) {
             setShowToast(true);
             toast.error("Name should not be duplicated");
